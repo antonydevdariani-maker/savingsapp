@@ -1,8 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { useState } from "react";
+import { Accelerometer } from "expo-sensors";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase, repsRequired } from "@/lib/supabase";
+
+// Pushup detection via accelerometer:
+// Phone flat on back — Z≈1 when up, dips when going down then returns up = 1 rep
+const DOWN_THRESHOLD = 0.65;  // Z below this = in down position
+const UP_THRESHOLD = 0.85;    // Z above this = back up = rep complete
 
 export default function Challenge() {
   const router = useRouter();
@@ -15,11 +21,49 @@ export default function Challenge() {
   const [reps, setReps] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [zValue, setZValue] = useState(1);
 
-  async function handleComplete(completedReps: number) {
+  const wasDown = useRef(false);
+  const repsRef = useRef(0);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(100);
+    const sub = Accelerometer.addListener(({ z }) => {
+      setZValue(Math.abs(z));
+      if (!startedRef.current) return;
+
+      const absZ = Math.abs(z);
+      if (absZ < DOWN_THRESHOLD) {
+        wasDown.current = true;
+      } else if (wasDown.current && absZ > UP_THRESHOLD) {
+        wasDown.current = false;
+        repsRef.current += 1;
+        setReps(repsRef.current);
+        if (repsRef.current >= target) {
+          startedRef.current = false;
+          const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+          handleComplete(repsRef.current, duration);
+        }
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  const startTimeRef = useRef(0);
+
+  function start() {
+    repsRef.current = 0;
+    startTimeRef.current = Date.now();
+    setReps(0);
+    setStarted(true);
+    startedRef.current = true;
+    setStartTime(Date.now());
+  }
+
+  async function handleComplete(completedReps: number, duration: number) {
     if (submitting) return;
     setSubmitting(true);
-    const duration = Math.round((Date.now() - startTime) / 1000);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace("/login"); return; }
@@ -64,25 +108,6 @@ export default function Challenge() {
     }
   }
 
-  function countRep() {
-    const next = reps + 1;
-    setReps(next);
-    if (next >= target) handleComplete(next);
-  }
-
-  if (!permission) return <View style={s.root} />;
-
-  if (!permission.granted) {
-    return (
-      <View style={[s.root, s.center]}>
-        <Text style={s.label}>Camera access needed</Text>
-        <TouchableOpacity style={s.startBtn} onPress={requestPermission}>
-          <Text style={s.startBtnText}>Allow Camera</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   if (submitting) {
     return (
       <View style={[s.root, s.center]}>
@@ -91,9 +116,13 @@ export default function Challenge() {
     );
   }
 
+  const progress = Math.min(reps / target, 1);
+
   return (
     <View style={s.root}>
-      <CameraView style={StyleSheet.absoluteFill} facing="front" />
+      {permission?.granted && (
+        <CameraView style={StyleSheet.absoluteFill} facing="front" />
+      )}
 
       <View style={s.overlay}>
         <View style={s.topbar}>
@@ -110,7 +139,14 @@ export default function Challenge() {
               <Text style={s.cardTitle}>CHALLENGE</Text>
               <Text style={s.bigNum}>{target}</Text>
               <Text style={s.cardSub}>pushups to unlock ${amount.toFixed(2)}</Text>
-              <TouchableOpacity style={s.startBtn} onPress={() => { setStarted(true); setStartTime(Date.now()); }}>
+              <View style={s.instructionBox}>
+                <Text style={s.instructionText}>📱 Place phone on your upper back</Text>
+                <Text style={s.instructionText}>AI counts reps automatically</Text>
+              </View>
+              <TouchableOpacity style={s.startBtn} onPress={() => {
+                if (!permission?.granted) requestPermission();
+                start();
+              }}>
                 <Text style={s.startBtnText}>Start</Text>
               </TouchableOpacity>
             </View>
@@ -122,12 +158,11 @@ export default function Challenge() {
               <Text style={s.repTarget}>/ {target}</Text>
             </View>
             <View style={s.track}>
-              <View style={[s.fill, { width: `${Math.min(reps / target * 100, 100)}%` as any }]} />
+              <View style={[s.fill, { width: `${progress * 100}%` as any }]} />
             </View>
-            <TouchableOpacity style={s.repBtn} onPress={countRep} activeOpacity={0.7}>
-              <Text style={s.repBtnText}>✓ Rep Done</Text>
-            </TouchableOpacity>
-            <Text style={s.hint}>Tap after each pushup</Text>
+            <Text style={s.hint}>
+              {wasDown.current ? "⬇ Go up to complete rep" : "⬆ Go down for next rep"}
+            </Text>
           </View>
         )}
       </View>
@@ -142,20 +177,20 @@ const s = StyleSheet.create({
   topbar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, paddingTop: 56 },
   close: { color: "#fff", fontSize: 20 },
   topLabel: { color: "rgba(255,255,255,0.6)", fontSize: 13 },
-  card: { backgroundColor: "rgba(0,0,0,0.75)", borderWidth: 1, borderColor: "rgba(0,255,136,0.3)", borderRadius: 24, padding: 32, alignItems: "center", width: 280 },
+  card: { backgroundColor: "rgba(0,0,0,0.8)", borderWidth: 1, borderColor: "rgba(0,255,136,0.3)", borderRadius: 24, padding: 28, alignItems: "center", width: 300 },
   cardTitle: { color: "#00ff88", fontSize: 12, letterSpacing: 2, marginBottom: 8 },
   bigNum: { color: "#fff", fontSize: 64, fontWeight: "800" },
-  cardSub: { color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 24, textAlign: "center" },
-  startBtn: { backgroundColor: "#00ff88", borderRadius: 14, paddingVertical: 16, paddingHorizontal: 40, width: "100%", alignItems: "center" },
+  cardSub: { color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 16, textAlign: "center" },
+  instructionBox: { backgroundColor: "rgba(0,255,136,0.08)", borderRadius: 12, padding: 12, marginBottom: 20, width: "100%", gap: 4 },
+  instructionText: { color: "rgba(255,255,255,0.7)", fontSize: 13, textAlign: "center" },
+  startBtn: { backgroundColor: "#00ff88", borderRadius: 14, paddingVertical: 16, width: "100%", alignItems: "center" },
   startBtnText: { color: "#000", fontWeight: "700", fontSize: 16 },
   bottom: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "rgba(0,0,0,0.85)", borderTopWidth: 1, borderTopColor: "#1a1a1a", padding: 20, paddingBottom: 48 },
   repRow: { flexDirection: "row", alignItems: "baseline", gap: 6, marginBottom: 10 },
   repCount: { color: "#fff", fontSize: 56, fontWeight: "800", lineHeight: 60 },
   repTarget: { color: "rgba(255,255,255,0.3)", fontSize: 20 },
-  track: { height: 8, backgroundColor: "#1a1a1a", borderRadius: 4, overflow: "hidden", marginBottom: 20 },
+  track: { height: 8, backgroundColor: "#1a1a1a", borderRadius: 4, overflow: "hidden", marginBottom: 14 },
   fill: { height: 8, backgroundColor: "#00ff88", borderRadius: 4 },
-  repBtn: { backgroundColor: "#00ff88", borderRadius: 16, paddingVertical: 20, alignItems: "center", marginBottom: 8 },
-  repBtnText: { color: "#000", fontWeight: "800", fontSize: 20 },
-  hint: { color: "rgba(255,255,255,0.3)", fontSize: 13, textAlign: "center" },
-  label: { color: "rgba(255,255,255,0.6)", fontSize: 16, marginBottom: 20 },
+  hint: { color: "rgba(255,255,255,0.5)", fontSize: 14, textAlign: "center" },
+  label: { color: "rgba(255,255,255,0.6)", fontSize: 16 },
 });
