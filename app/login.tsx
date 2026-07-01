@@ -32,11 +32,10 @@ export default function Login() {
   async function testLogin() {
     setLoading(true);
     try {
-      let { error } = await supabase.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
-      if (error) {
-        const res = await supabase.auth.signUp({ email: TEST_EMAIL, password: TEST_PASSWORD });
-        if (res.error) throw res.error;
-      }
+      // try signup first (no-op if already exists), then login
+      await supabase.auth.signUp({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      const { error } = await supabase.auth.signInWithPassword({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      if (error) throw error;
       router.replace("/dashboard");
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Test login failed");
