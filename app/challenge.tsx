@@ -267,6 +267,8 @@ tryInit();
         javaScriptEnabled
         domStorageEnabled
         originWhitelist={["*"]}
+        mediaCapturePermissionGrantType="grant"
+        allowsProtectedMedia
         onMessage={(e: WebViewMessageEvent) => {
           try {
             const msg = JSON.parse(e.nativeEvent.data);
