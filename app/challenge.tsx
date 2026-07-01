@@ -66,9 +66,9 @@ export default function Challenge() {
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#000; color:#fff; font-family:-apple-system,sans-serif; overflow:hidden; height:100vh; }
-#video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-#canvas { position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1); }
-#ui { position:absolute; inset:0; display:flex; flex-direction:column; }
+#video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1); z-index:1; }
+#canvas { position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1); z-index:2; pointer-events:none; }
+#ui { position:absolute; inset:0; display:flex; flex-direction:column; z-index:3; }
 #topbar { padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
 #close { color:rgba(255,255,255,0.5); font-size:20px; background:none; border:none; color:#fff; }
 #overlay { flex:1; display:flex; align-items:center; justify-content:center; }
