@@ -11,7 +11,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.sweatlock.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "SweatLock uses the camera to count your pushup reps via AI pose detection."
+        "NSCameraUsageDescription": "SweatLock uses the camera to count your pushup reps via AI pose detection.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -19,7 +20,10 @@
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
-      "permissions": ["android.permission.CAMERA"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -27,10 +31,21 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-camera", { "cameraPermission": "SweatLock uses your camera to count pushup reps." }]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SweatLock uses your camera to count pushup reps."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cfcee07a-693e-4546-ba9c-ffe5464e017f"
+      }
     }
   }
 }
