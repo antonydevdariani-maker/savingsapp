@@ -1,14 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { Accelerometer } from "expo-sensors";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase, repsRequired } from "@/lib/supabase";
-
-// Pushup detection via accelerometer:
-// Phone flat on back — Z≈1 when up, dips when going down then returns up = 1 rep
-const DOWN_THRESHOLD = 0.65;  // Z below this = in down position
-const UP_THRESHOLD = 0.85;    // Z above this = back up = rep complete
 
 export default function Challenge() {
   const router = useRouter();
@@ -19,46 +13,26 @@ export default function Challenge() {
   const [permission, requestPermission] = useCameraPermissions();
   const [started, setStarted] = useState(false);
   const [reps, setReps] = useState(0);
-  const [startTime, setStartTime] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [zValue, setZValue] = useState(1);
 
-  const wasDown = useRef(false);
   const repsRef = useRef(0);
-  const startedRef = useRef(false);
-
-  useEffect(() => {
-    Accelerometer.setUpdateInterval(100);
-    const sub = Accelerometer.addListener(({ z }) => {
-      setZValue(Math.abs(z));
-      if (!startedRef.current) return;
-
-      const absZ = Math.abs(z);
-      if (absZ < DOWN_THRESHOLD) {
-        wasDown.current = true;
-      } else if (wasDown.current && absZ > UP_THRESHOLD) {
-        wasDown.current = false;
-        repsRef.current += 1;
-        setReps(repsRef.current);
-        if (repsRef.current >= target) {
-          startedRef.current = false;
-          const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
-          handleComplete(repsRef.current, duration);
-        }
-      }
-    });
-    return () => sub.remove();
-  }, []);
-
   const startTimeRef = useRef(0);
 
   function start() {
+    if (!permission?.granted) requestPermission();
     repsRef.current = 0;
     startTimeRef.current = Date.now();
     setReps(0);
     setStarted(true);
-    startedRef.current = true;
-    setStartTime(Date.now());
+  }
+
+  function countRep() {
+    repsRef.current += 1;
+    setReps(repsRef.current);
+    if (repsRef.current >= target) {
+      const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+      handleComplete(repsRef.current, duration);
+    }
   }
 
   async function handleComplete(completedReps: number, duration: number) {
@@ -140,13 +114,10 @@ export default function Challenge() {
               <Text style={s.bigNum}>{target}</Text>
               <Text style={s.cardSub}>pushups to unlock ${amount.toFixed(2)}</Text>
               <View style={s.instructionBox}>
-                <Text style={s.instructionText}>📱 Place phone on your upper back</Text>
-                <Text style={s.instructionText}>AI counts reps automatically</Text>
+                <Text style={s.instructionText}>📱 Prop phone up facing you</Text>
+                <Text style={s.instructionText}>Tap the button after each pushup</Text>
               </View>
-              <TouchableOpacity style={s.startBtn} onPress={() => {
-                if (!permission?.granted) requestPermission();
-                start();
-              }}>
+              <TouchableOpacity style={s.startBtn} onPress={start}>
                 <Text style={s.startBtnText}>Start</Text>
               </TouchableOpacity>
             </View>
@@ -160,9 +131,9 @@ export default function Challenge() {
             <View style={s.track}>
               <View style={[s.fill, { width: `${progress * 100}%` as any }]} />
             </View>
-            <Text style={s.hint}>
-              {wasDown.current ? "⬇ Go up to complete rep" : "⬆ Go down for next rep"}
-            </Text>
+            <TouchableOpacity style={s.repBtn} onPress={countRep} activeOpacity={0.7}>
+              <Text style={s.repBtnText}>✓ Rep Done</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -191,6 +162,7 @@ const s = StyleSheet.create({
   repTarget: { color: "rgba(255,255,255,0.3)", fontSize: 20 },
   track: { height: 8, backgroundColor: "#1a1a1a", borderRadius: 4, overflow: "hidden", marginBottom: 14 },
   fill: { height: 8, backgroundColor: "#00ff88", borderRadius: 4 },
-  hint: { color: "rgba(255,255,255,0.5)", fontSize: 14, textAlign: "center" },
+  repBtn: { backgroundColor: "#00ff88", borderRadius: 16, paddingVertical: 20, alignItems: "center", marginTop: 8 },
+  repBtnText: { color: "#000", fontWeight: "800", fontSize: 18 },
   label: { color: "rgba(255,255,255,0.6)", fontSize: 16 },
 });
