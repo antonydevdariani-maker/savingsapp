@@ -137,12 +137,21 @@ function deg(a, b, c) {
 
 const CONNECTIONS = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
 
-async function init() {
+// Start camera immediately so user sees themselves right away
+async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
     video.srcObject = stream;
     await video.play();
+    status.textContent = 'Loading AI model...';
+  } catch(e) {
+    status.textContent = 'Camera error: ' + e.message;
+  }
+}
 
+// Load MediaPipe in background after camera is live
+async function loadDetector() {
+  try {
     const vision = await PoseLandmarkerVision.FilesetResolver.forVisionTasks(
       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
     );
@@ -155,9 +164,8 @@ async function init() {
       numPoses: 1
     });
     status.textContent = '';
-    document.getElementById('overlay').classList.remove('hidden');
   } catch(e) {
-    status.textContent = 'Camera error: ' + e.message;
+    status.textContent = 'AI error: ' + e.message;
   }
 }
 
@@ -183,7 +191,6 @@ function loop() {
     if (result.landmarks.length > 0) {
       const lm = result.landmarks[0];
 
-      // draw skeleton
       ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 2;
       CONNECTIONS.forEach(([i,j]) => {
         const a = lm[i], b = lm[j];
@@ -201,7 +208,6 @@ function loop() {
         ctx.fill();
       });
 
-      // rep counting: shoulder(11/12) elbow(13/14) wrist(15/16)
       const ls=lm[11],le=lm[13],lw=lm[15];
       const rs=lm[12],re=lm[14],rw=lm[16];
       const lv=(ls?.visibility??0)>0.3&&(le?.visibility??0)>0.3&&(lw?.visibility??0)>0.3;
@@ -233,17 +239,15 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// MediaPipe namespace fix
-window.PoseLandmarkerVision = window.VisionTasksVision || {};
-document.addEventListener('DOMContentLoaded', () => {});
-
-// wait for mediapipe to load
-function tryInit() {
-  if(window.PoseLandmarkerVision?.PoseLandmarker) { init(); }
-  else if(window.vision?.PoseLandmarker) { window.PoseLandmarkerVision = window.vision; init(); }
-  else { setTimeout(tryInit, 200); }
-}
-tryInit();
+// Start camera now, load MediaPipe after
+startCamera().then(() => {
+  function tryLoadDetector() {
+    if(window.PoseLandmarkerVision?.PoseLandmarker) { loadDetector(); }
+    else if(window.vision?.PoseLandmarker) { window.PoseLandmarkerVision = window.vision; loadDetector(); }
+    else { setTimeout(tryLoadDetector, 200); }
+  }
+  tryLoadDetector();
+});
 </script>
 </body>
 </html>`;
