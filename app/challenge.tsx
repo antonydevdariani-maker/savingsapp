@@ -1,5 +1,5 @@
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from "react-native";
-import { WebView } from "react-native-webview";
+import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useRef, useState } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase, repsRequired } from "@/lib/supabase";
@@ -10,7 +10,7 @@ export default function Challenge() {
   const amount = parseFloat(amountParam ?? "0");
   const target = repsRequired(amount);
   const [submitting, setSubmitting] = useState(false);
-  const webviewRef = useRef<WebView>(null);
+  const webviewRef = useRef<InstanceType<typeof WebView>>(null);
 
   async function handleComplete(reps: number, duration: number) {
     if (submitting) return;
@@ -267,7 +267,7 @@ tryInit();
         javaScriptEnabled
         domStorageEnabled
         originWhitelist={["*"]}
-        onMessage={(e) => {
+        onMessage={(e: WebViewMessageEvent) => {
           try {
             const msg = JSON.parse(e.nativeEvent.data);
             if (msg.type === "complete") handleComplete(msg.reps, msg.duration);
