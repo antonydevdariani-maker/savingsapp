@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
 
-interface Account { balance: number; locked_balance: number }
+interface Account { balance: number; locked_balance: number; locked_until?: string | null }
 interface Transaction { id: string; type: string; amount: number; status: string; created_at: string }
 interface Goal { id: string; name: string; target_amount: number; created_at: string }
 
@@ -23,7 +23,7 @@ export default function Dashboard() {
     await supabase.from("sweatlock_accounts").upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
 
     const [{ data: acct }, { data: txs }, { data: goalData }] = await Promise.all([
-      supabase.from("sweatlock_accounts").select("balance,locked_balance").eq("user_id", user.id).single(),
+      supabase.from("sweatlock_accounts").select("balance,locked_balance,locked_until").eq("user_id", user.id).single(),
       supabase.from("sweatlock_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
       supabase.from("sweatlock_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
@@ -66,9 +66,17 @@ export default function Dashboard() {
         <Text style={s.balance}>${(account?.locked_balance ?? 0).toFixed(2)}</Text>
         <Text style={s.total}>Total: ${(account?.balance ?? 0).toFixed(2)}</Text>
 
+        {account?.locked_until && new Date(account.locked_until) > new Date() && (
+          <View style={s.lockBadge}>
+            <Text style={s.lockBadgeText}>🔒 Locked until {new Date(account.locked_until).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</Text>
+          </View>
+        )}
         <View style={s.actions}>
           <TouchableOpacity style={s.depositBtn} onPress={() => router.push("/deposit")} activeOpacity={0.85}>
             <Text style={s.depositBtnText}>Deposit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.lockBtn} onPress={() => router.push("/set-lock")} activeOpacity={0.85}>
+            <Text style={s.lockBtnText}>🔒 Lock</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.withdrawBtn} onPress={() => router.push("/withdraw")} activeOpacity={0.85}>
             <Text style={s.withdrawBtnText}>Withdraw 💪</Text>
@@ -142,11 +150,15 @@ const s = StyleSheet.create({
   label: { color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
   balance: { fontSize: 48, fontWeight: "800", color: "#fff" },
   total: { color: "rgba(255,255,255,0.3)", fontSize: 13, marginTop: 2, marginBottom: 20 },
-  actions: { flexDirection: "row", gap: 12 },
+  lockBadge: { backgroundColor: "rgba(248,113,113,0.1)", borderRadius: 8, padding: 8, marginBottom: 12, borderWidth: 1, borderColor: "rgba(248,113,113,0.3)" },
+  lockBadgeText: { color: "#f87171", fontSize: 12, textAlign: "center" },
+  actions: { flexDirection: "row", gap: 8 },
   depositBtn: { flex: 1, backgroundColor: "#1a1a1a", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
-  depositBtnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  depositBtnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
+  lockBtn: { flex: 1, backgroundColor: "#1a1a1a", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  lockBtnText: { color: "#f87171", fontWeight: "600", fontSize: 13 },
   withdrawBtn: { flex: 1, backgroundColor: "#00ff88", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
-  withdrawBtnText: { color: "#000", fontWeight: "700", fontSize: 14 },
+  withdrawBtnText: { color: "#000", fontWeight: "700", fontSize: 13 },
   sectionLabel: { color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
   addGoal: { color: "#00ff88", fontSize: 13, fontWeight: "600" },
