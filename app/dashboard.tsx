@@ -5,11 +5,13 @@ import { supabase } from "@/lib/supabase";
 
 interface Account { balance: number; locked_balance: number }
 interface Transaction { id: string; type: string; amount: number; status: string; created_at: string }
+interface Goal { id: string; name: string; target_amount: number; created_at: string }
 
 export default function Dashboard() {
   const router = useRouter();
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -20,13 +22,15 @@ export default function Dashboard() {
 
     await supabase.from("sweatlock_accounts").upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
 
-    const [{ data: acct }, { data: txs }] = await Promise.all([
+    const [{ data: acct }, { data: txs }, { data: goalData }] = await Promise.all([
       supabase.from("sweatlock_accounts").select("balance,locked_balance").eq("user_id", user.id).single(),
       supabase.from("sweatlock_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("sweatlock_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
 
     setAccount(acct);
     setTransactions(txs ?? []);
+    setGoals(goalData ?? []);
   }, [router]);
 
   useEffect(() => { load(); }, [load]);
@@ -72,8 +76,38 @@ export default function Dashboard() {
         </View>
       </View>
 
+      {/* goals */}
+      <View style={s.sectionRow}>
+        <Text style={s.sectionLabel}>Goals</Text>
+        <TouchableOpacity onPress={() => router.push("/new-goal")}>
+          <Text style={s.addGoal}>+ New</Text>
+        </TouchableOpacity>
+      </View>
+      {goals.length === 0 ? (
+        <TouchableOpacity style={s.emptyGoal} onPress={() => router.push("/new-goal")}>
+          <Text style={s.emptyGoalText}>Set a savings goal →</Text>
+        </TouchableOpacity>
+      ) : (
+        goals.map((g) => {
+          const locked = account?.locked_balance ?? 0;
+          const progress = Math.min(locked / g.target_amount, 1);
+          return (
+            <View key={g.id} style={s.goalCard}>
+              <View style={s.goalRow}>
+                <Text style={s.goalName}>{g.name}</Text>
+                <Text style={s.goalAmt}>${locked.toFixed(0)} / ${g.target_amount.toFixed(0)}</Text>
+              </View>
+              <View style={s.goalTrack}>
+                <View style={[s.goalFill, { width: `${progress * 100}%` as any }]} />
+              </View>
+              <Text style={s.goalPct}>{Math.round(progress * 100)}% saved</Text>
+            </View>
+          );
+        })
+      )}
+
       {/* transactions */}
-      <Text style={s.sectionLabel}>History</Text>
+      <Text style={[s.sectionLabel, { marginTop: 24 }]}>History</Text>
       {transactions.length === 0 ? (
         <Text style={s.empty}>No transactions yet</Text>
       ) : (
@@ -114,6 +148,17 @@ const s = StyleSheet.create({
   withdrawBtn: { flex: 1, backgroundColor: "#00ff88", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   withdrawBtnText: { color: "#000", fontWeight: "700", fontSize: 14 },
   sectionLabel: { color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  addGoal: { color: "#00ff88", fontSize: 13, fontWeight: "600" },
+  emptyGoal: { backgroundColor: "#111", borderRadius: 14, padding: 20, borderWidth: 1, borderColor: "#222", alignItems: "center", marginBottom: 8 },
+  emptyGoalText: { color: "rgba(255,255,255,0.3)", fontSize: 14 },
+  goalCard: { backgroundColor: "#111", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#222" },
+  goalRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  goalName: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  goalAmt: { color: "rgba(255,255,255,0.4)", fontSize: 13 },
+  goalTrack: { height: 6, backgroundColor: "#1a1a1a", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  goalFill: { height: 6, backgroundColor: "#00ff88", borderRadius: 3 },
+  goalPct: { color: "rgba(255,255,255,0.3)", fontSize: 11 },
   empty: { color: "rgba(255,255,255,0.2)", textAlign: "center", paddingVertical: 40, fontSize: 14 },
   tx: { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#111", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#1a1a1a" },
   txType: { color: "#fff", fontWeight: "600", fontSize: 14, textTransform: "capitalize" },
