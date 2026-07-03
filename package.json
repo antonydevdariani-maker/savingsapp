@@ -16,6 +16,7 @@
     "expo-file-system": "^19.0.23",
     "expo-gl": "^16.0.10",
     "expo-linking": "^57.0.1",
+    "expo-localization": "~17.0.9",
     "expo-modules-core": "^57.0.1",
     "expo-router": "^6.0.24",
     "expo-sensors": "~15.0.8",

@@ -1,10 +1,13 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase, repsRequired } from "@/lib/supabase";
+import { formatMoney, currencySymbol } from "@/lib/currency";
 
 export default function Withdraw() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [locked, setLocked] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
   const [amount, setAmount] = useState("");
@@ -39,10 +42,10 @@ export default function Withdraw() {
 
   return (
     <KeyboardAvoidingView style={s.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={s.content}>
+      <View style={[s.content, { paddingTop: insets.top + 16 }]}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={s.back}>← Back</Text>
+            <Text style={s.back}>Back</Text>
           </TouchableOpacity>
           <Text style={s.title}>Withdraw</Text>
           <View style={{ width: 50 }} />
@@ -50,15 +53,14 @@ export default function Withdraw() {
 
         <View style={s.balanceCard}>
           <Text style={s.balLabel}>Available to unlock</Text>
-          <Text style={s.balValue}>${locked.toFixed(2)}</Text>
+          <Text style={s.balValue}>{formatMoney(locked)}</Text>
         </View>
 
         {isLocked ? (
           <View style={s.lockBox}>
-            <Text style={s.lockIcon}>🔒</Text>
             <Text style={s.lockTitle}>Funds Locked</Text>
             <Text style={s.lockSub}>
-              Unlocks {lockedUntil!.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              Unlocks {lockedUntil!.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
             </Text>
             <Text style={s.lockDays}>{daysRemaining()} days remaining</Text>
           </View>
@@ -66,7 +68,7 @@ export default function Withdraw() {
           <>
             <Text style={s.label}>Withdraw amount</Text>
             <View style={s.inputWrap}>
-              <Text style={s.dollar}>$</Text>
+              <Text style={s.dollar}>{currencySymbol}</Text>
               <TextInput
                 style={s.input}
                 placeholder="0.00"
@@ -82,14 +84,14 @@ export default function Withdraw() {
               <View style={s.challengeBox}>
                 <Text style={s.challengeLabel}>Challenge required</Text>
                 <Text style={s.challengeReps}>{reps} pushups</Text>
-                <Text style={s.challengeSub}>Complete them on camera to unlock ${parsed.toFixed(2)}</Text>
+                <Text style={s.challengeSub}>Complete them on camera to unlock {formatMoney(parsed)}</Text>
               </View>
             )}
 
             {!!error && <Text style={s.error}>{error}</Text>}
 
             <TouchableOpacity style={[s.btn, !valid && s.btnDisabled]} onPress={proceed} disabled={!valid} activeOpacity={0.85}>
-              <Text style={s.btnText}>Start Challenge 💪</Text>
+              <Text style={s.btnText}>Start Challenge</Text>
             </TouchableOpacity>
           </>
         )}
@@ -108,7 +110,6 @@ const s = StyleSheet.create({
   balLabel: { color: "rgba(255,255,255,0.4)", fontSize: 11 },
   balValue: { color: "#fff", fontWeight: "700", fontSize: 28, marginTop: 2 },
   lockBox: { backgroundColor: "#111", borderRadius: 20, padding: 32, borderWidth: 1, borderColor: "rgba(248,113,113,0.3)", alignItems: "center", gap: 8, marginTop: 8 },
-  lockIcon: { fontSize: 40 },
   lockTitle: { color: "#f87171", fontWeight: "800", fontSize: 22 },
   lockSub: { color: "rgba(255,255,255,0.5)", fontSize: 14, textAlign: "center" },
   lockDays: { color: "rgba(255,255,255,0.3)", fontSize: 13 },

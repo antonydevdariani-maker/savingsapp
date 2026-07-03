@@ -2,10 +2,13 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useState, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase, repsRequired } from "@/lib/supabase";
+import { formatMoney } from "@/lib/currency";
 
 export default function Challenge() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { amount: amountParam } = useLocalSearchParams<{ amount: string }>();
   const amount = parseFloat(amountParam ?? "0");
   const target = repsRequired(amount);
@@ -105,12 +108,12 @@ export default function Challenge() {
       )}
 
       <View style={s.overlay}>
-        <View style={s.topbar}>
+        <View style={[s.topbar, { paddingTop: insets.top + 12 }]}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={s.close}>✕</Text>
+            <Text style={s.close}>Close</Text>
           </TouchableOpacity>
-          <Text style={s.topLabel}>Unlocking ${amount.toFixed(2)}</Text>
-          <View style={{ width: 32 }} />
+          <Text style={s.topLabel}>Unlocking {formatMoney(amount)}</Text>
+          <View style={{ width: 40 }} />
         </View>
 
         {!started ? (
@@ -118,9 +121,9 @@ export default function Challenge() {
             <View style={s.card}>
               <Text style={s.cardTitle}>CHALLENGE</Text>
               <Text style={s.bigNum}>{target}</Text>
-              <Text style={s.cardSub}>pushups to unlock ${amount.toFixed(2)}</Text>
+              <Text style={s.cardSub}>pushups to unlock {formatMoney(amount)}</Text>
               <View style={s.instructionBox}>
-                <Text style={s.instructionText}>📱 Prop phone up facing you</Text>
+                <Text style={s.instructionText}>Prop phone up facing you</Text>
                 <Text style={s.instructionText}>Tap the button after each pushup</Text>
               </View>
               <TouchableOpacity style={s.startBtn} onPress={start}>
@@ -129,7 +132,7 @@ export default function Challenge() {
             </View>
           </View>
         ) : (
-          <View style={s.bottom}>
+          <View style={[s.bottom, { paddingBottom: insets.bottom + 24 }]}>
             <View style={s.repRow}>
               <Text style={s.repCount}>{reps}</Text>
               <Text style={s.repTarget}>/ {target}</Text>
@@ -138,7 +141,7 @@ export default function Challenge() {
               <View style={[s.fill, { width: `${progress * 100}%` as any }]} />
             </View>
             <TouchableOpacity style={s.repBtn} onPress={countRep} activeOpacity={0.7}>
-              <Text style={s.repBtnText}>✓ Rep Done</Text>
+              <Text style={s.repBtnText}>Rep Done</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -151,8 +154,8 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000" },
   overlay: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  topbar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, paddingTop: 56 },
-  close: { color: "#fff", fontSize: 20 },
+  topbar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20 },
+  close: { color: "rgba(255,255,255,0.7)", fontSize: 15, fontWeight: "600" },
   topLabel: { color: "rgba(255,255,255,0.6)", fontSize: 13 },
   card: { backgroundColor: "rgba(0,0,0,0.8)", borderWidth: 1, borderColor: "rgba(0,255,136,0.3)", borderRadius: 24, padding: 28, alignItems: "center", width: 300 },
   cardTitle: { color: "#00ff88", fontSize: 12, letterSpacing: 2, marginBottom: 8 },

@@ -90,7 +90,7 @@ export default function Login() {
         </View>
 
         <TouchableOpacity style={s.testBtn} onPress={testLogin} disabled={loading} activeOpacity={0.85}>
-          <Text style={s.testBtnText}>🧪 Test Account</Text>
+          <Text style={s.testBtnText}>Use Test Account</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 
 const PRESETS = [
@@ -14,6 +15,7 @@ const PRESETS = [
 
 export default function SetLock() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -38,9 +40,9 @@ export default function SetLock() {
   }
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.content}>
+    <ScrollView style={s.root} contentContainerStyle={[s.content, { paddingTop: insets.top + 24 }]}>
       <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-        <Text style={s.backText}>← Back</Text>
+        <Text style={s.backText}>Back</Text>
       </TouchableOpacity>
 
       <Text style={s.title}>Lock Funds</Text>
@@ -55,7 +57,7 @@ export default function SetLock() {
           >
             <Text style={[s.presetLabel, selected === p.days && s.presetLabelSelected]}>{p.label}</Text>
             <Text style={[s.presetDate, selected === p.days && s.presetDateSelected]}>
-              until {unlockDate(p.days).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              until {unlockDate(p.days).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
             </Text>
           </TouchableOpacity>
         ))}
@@ -63,7 +65,7 @@ export default function SetLock() {
 
       {selected !== null && (
         <View style={s.warningBox}>
-          <Text style={s.warningText}>⚠️ Once set, this lock cannot be removed early. Your funds will be inaccessible until the date.</Text>
+          <Text style={s.warningText}>Once set, this lock cannot be removed early. Your funds will be inaccessible until the date.</Text>
         </View>
       )}
 
@@ -72,7 +74,7 @@ export default function SetLock() {
         onPress={confirm}
         disabled={selected === null || saving}
       >
-        <Text style={s.btnText}>{saving ? "Locking..." : "Lock My Savings 🔒"}</Text>
+        <Text style={s.btnText}>{saving ? "Locking..." : "Lock My Savings"}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

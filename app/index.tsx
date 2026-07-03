@@ -1,16 +1,18 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 
 const steps = [
-  { icon: "💵", title: "Deposit", desc: "Add money — locks instantly" },
-  { icon: "📷", title: "Challenge", desc: "Do pushups on camera to earn your money back" },
-  { icon: "✅", title: "Withdraw", desc: "$10 = 5 reps, $100 = 50 reps, max 75" },
+  { num: "01", title: "Deposit", desc: "Add money — it locks instantly" },
+  { num: "02", title: "Challenge", desc: "Do pushups on camera to earn it back" },
+  { num: "03", title: "Withdraw", desc: "More money means more reps, up to 75" },
 ];
 
 export default function Landing() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
@@ -20,21 +22,25 @@ export default function Landing() {
   }, []);
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.content} bounces={false}>
+    <ScrollView
+      style={s.root}
+      contentContainerStyle={[s.content, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 32 }]}
+      bounces={false}
+    >
       <View style={s.nav}>
         <Text style={s.logo}>
           <Text style={s.green}>Sweat</Text>Lock
         </Text>
         {authed && (
           <TouchableOpacity onPress={() => router.push("/dashboard")}>
-            <Text style={s.navLink}>Dashboard →</Text>
+            <Text style={s.navLink}>Dashboard</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <View style={s.hero}>
         <View style={s.badge}>
-          <Text style={s.badgeText}>💪 Savings with a price</Text>
+          <Text style={s.badgeText}>Savings with a price</Text>
         </View>
         <Text style={s.h1}>
           Lock your money.{"\n"}
@@ -48,8 +54,8 @@ export default function Landing() {
       <View style={s.steps}>
         {steps.map((step) => (
           <View key={step.title} style={s.step}>
-            <Text style={s.stepIcon}>{step.icon}</Text>
-            <View>
+            <Text style={s.stepNum}>{step.num}</Text>
+            <View style={s.stepBody}>
               <Text style={s.stepTitle}>{step.title}</Text>
               <Text style={s.stepDesc}>{step.desc}</Text>
             </View>
@@ -70,12 +76,12 @@ export default function Landing() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000" },
-  content: { padding: 20, paddingBottom: 48 },
-  nav: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 48 },
-  logo: { fontSize: 20, fontWeight: "700", color: "#fff" },
+  content: { paddingHorizontal: 24 },
+  nav: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 56 },
+  logo: { fontSize: 19, fontWeight: "700", color: "#fff", letterSpacing: -0.3 },
   green: { color: "#00ff88" },
-  navLink: { color: "#00ff88", fontSize: 14 },
-  hero: { marginBottom: 32 },
+  navLink: { color: "#00ff88", fontSize: 14, fontWeight: "600" },
+  hero: { marginBottom: 40 },
   badge: {
     alignSelf: "flex-start",
     backgroundColor: "rgba(0,255,136,0.1)",
@@ -83,24 +89,25 @@ const s = StyleSheet.create({
     borderColor: "rgba(0,255,136,0.2)",
     borderRadius: 100,
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    marginBottom: 16,
+    paddingVertical: 5,
+    marginBottom: 20,
   },
-  badgeText: { color: "#00ff88", fontSize: 12, fontWeight: "600" },
-  h1: { fontSize: 36, fontWeight: "800", color: "#fff", lineHeight: 44, marginBottom: 12 },
+  badgeText: { color: "#00ff88", fontSize: 12, fontWeight: "600", letterSpacing: 0.3 },
+  h1: { fontSize: 38, fontWeight: "800", color: "#fff", lineHeight: 45, marginBottom: 14, letterSpacing: -0.5 },
   sub: { fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 22 },
-  steps: { gap: 12, marginBottom: 32 },
+  steps: { gap: 1, marginBottom: 40, backgroundColor: "#161616", borderRadius: 20, overflow: "hidden" },
   step: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 18,
     backgroundColor: "#111",
-    borderRadius: 16,
-    padding: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
   },
-  stepIcon: { fontSize: 24 },
-  stepTitle: { fontSize: 14, fontWeight: "600", color: "#fff" },
-  stepDesc: { fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 },
+  stepNum: { fontSize: 13, fontWeight: "700", color: "rgba(0,255,136,0.5)", letterSpacing: 1 },
+  stepBody: { flex: 1 },
+  stepTitle: { fontSize: 15, fontWeight: "700", color: "#fff" },
+  stepDesc: { fontSize: 12.5, color: "rgba(255,255,255,0.4)", marginTop: 3, lineHeight: 17 },
   cta: {
     backgroundColor: "#00ff88",
     borderRadius: 16,

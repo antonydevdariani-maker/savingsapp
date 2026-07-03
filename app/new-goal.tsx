@@ -1,10 +1,13 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { currencySymbol } from "@/lib/currency";
 
 export default function NewGoal() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
   const [saving, setSaving] = useState(false);
@@ -30,9 +33,9 @@ export default function NewGoal() {
 
   return (
     <KeyboardAvoidingView style={s.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={s.content}>
+      <View style={[s.content, { paddingTop: insets.top + 24 }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Text style={s.backText}>← Back</Text>
+          <Text style={s.backText}>Back</Text>
         </TouchableOpacity>
 
         <Text style={s.title}>New Goal</Text>
@@ -53,7 +56,7 @@ export default function NewGoal() {
         <View style={s.field}>
           <Text style={s.fieldLabel}>TARGET AMOUNT</Text>
           <View style={s.amtRow}>
-            <Text style={s.dollar}>$</Text>
+            <Text style={s.dollar}>{currencySymbol}</Text>
             <TextInput
               style={[s.input, { flex: 1 }]}
               placeholder="500"

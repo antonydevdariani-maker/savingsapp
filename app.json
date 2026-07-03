@@ -36,7 +36,8 @@
         {
           "cameraPermission": "SweatLock uses your camera to count pushup reps."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

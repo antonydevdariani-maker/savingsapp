@@ -1,7 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { formatMoney } from "@/lib/currency";
 
 interface Account { balance: number; locked_balance: number; locked_until?: string | null }
 interface Transaction { id: string; type: string; amount: number; status: string; created_at: string }
@@ -9,6 +11,7 @@ interface Goal { id: string; name: string; target_amount: number; created_at: st
 
 export default function Dashboard() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -49,7 +52,7 @@ export default function Dashboard() {
   return (
     <ScrollView
       style={s.root}
-      contentContainerStyle={s.content}
+      contentContainerStyle={[s.content, { paddingTop: insets.top + 16 }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00ff88" />}
     >
       <View style={s.header}>
@@ -65,10 +68,7 @@ export default function Dashboard() {
       {/* balance card */}
       <View style={s.card}>
         <Text style={s.label}>Total Saved</Text>
-        <Text style={s.balance}>
-          ${Math.floor(account?.locked_balance ?? 0)}
-          <Text style={s.cents}>.{((account?.locked_balance ?? 0) % 1).toFixed(2).slice(2)}</Text>
-        </Text>
+        <Text style={s.balance}>{formatMoney(account?.locked_balance ?? 0)}</Text>
 
         <View style={s.statsRow}>
           <View style={s.stat}>
@@ -89,7 +89,7 @@ export default function Dashboard() {
 
         {account?.locked_until && new Date(account.locked_until) > new Date() && (
           <View style={s.lockBadge}>
-            <Text style={s.lockBadgeText}>🔒 Locked until {new Date(account.locked_until).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</Text>
+            <Text style={s.lockBadgeText}>Locked until {new Date(account.locked_until).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</Text>
           </View>
         )}
         <View style={s.actions}>
@@ -97,10 +97,10 @@ export default function Dashboard() {
             <Text style={s.depositBtnText}>Deposit</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.lockBtn} onPress={() => router.push("/set-lock")} activeOpacity={0.85}>
-            <Text style={s.lockBtnText}>🔒 Lock</Text>
+            <Text style={s.lockBtnText}>Lock</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.withdrawBtn} onPress={() => router.push("/withdraw")} activeOpacity={0.85}>
-            <Text style={s.withdrawBtnText}>Withdraw 💪</Text>
+            <Text style={s.withdrawBtnText}>Withdraw</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -124,7 +124,7 @@ export default function Dashboard() {
             <View key={g.id} style={s.goalCard}>
               <View style={s.goalRow}>
                 <Text style={s.goalName}>{g.name}</Text>
-                <Text style={s.goalAmt}>${locked.toFixed(0)} / ${g.target_amount.toFixed(0)}</Text>
+                <Text style={s.goalAmt}>{formatMoney(locked, { decimals: false })} / {formatMoney(g.target_amount, { decimals: false })}</Text>
               </View>
               <View style={s.goalTrack}>
                 <View style={[s.goalFill, { width: `${progress * 100}%` as any }]} />
@@ -148,7 +148,7 @@ export default function Dashboard() {
             </View>
             <View style={{ alignItems: "flex-end" }}>
               <Text style={[s.txAmount, { color: tx.type === "deposit" ? "#00ff88" : "#f87171" }]}>
-                {tx.type === "deposit" ? "+" : "-"}${tx.amount.toFixed(2)}
+                {tx.type === "deposit" ? "+" : "-"}{formatMoney(tx.amount)}
               </Text>
               <Text style={s.txStatus}>{tx.status}</Text>
             </View>
@@ -169,8 +169,7 @@ const s = StyleSheet.create({
   greeting: { color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 24, textTransform: "capitalize" },
   card: { backgroundColor: "#111", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "rgba(0,255,136,0.15)", marginBottom: 32 },
   label: { color: "#00ff88", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
-  balance: { fontSize: 52, fontWeight: "800", color: "#fff", marginBottom: 16 },
-  cents: { fontSize: 28, color: "rgba(255,255,255,0.4)" },
+  balance: { fontSize: 44, fontWeight: "800", color: "#fff", marginBottom: 16 },
   statsRow: { flexDirection: "row", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 14, paddingVertical: 12, marginBottom: 16 },
   stat: { flex: 1, alignItems: "center" },
   statDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.08)" },

@@ -1,12 +1,15 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase, repsRequired } from "@/lib/supabase";
+import { formatMoney, currencySymbol } from "@/lib/currency";
 
 const PRESETS = [10, 25, 50, 100, 250];
 
 export default function Deposit() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,18 +50,18 @@ export default function Deposit() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#000" }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView style={s.root} contentContainerStyle={s.content}>
+      <ScrollView style={s.root} contentContainerStyle={[s.content, { paddingTop: insets.top + 16 }]}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={s.back}>← Back</Text>
+            <Text style={s.back}>Back</Text>
           </TouchableOpacity>
           <Text style={s.title}>Deposit</Text>
           <View style={{ width: 50 }} />
         </View>
 
-        <Text style={s.label}>Amount (USD)</Text>
+        <Text style={s.label}>Amount ({currencySymbol})</Text>
         <View style={s.inputWrap}>
-          <Text style={s.dollar}>$</Text>
+          <Text style={s.dollar}>{currencySymbol}</Text>
           <TextInput
             style={s.input}
             placeholder="0.00"
@@ -78,7 +81,7 @@ export default function Deposit() {
               onPress={() => setAmount(String(p))}
               activeOpacity={0.8}
             >
-              <Text style={[s.presetText, parsed === p && s.presetTextActive]}>${p}</Text>
+              <Text style={[s.presetText, parsed === p && s.presetTextActive]}>{formatMoney(p, { decimals: false })}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -91,11 +94,11 @@ export default function Deposit() {
         )}
 
         <View style={s.notice}>
-          <Text style={s.noticeText}>⚠️ Mock deposit — no real money moves. Unit.co coming soon.</Text>
+          <Text style={s.noticeText}>Mock deposit — no real money moves. Unit.co coming soon.</Text>
         </View>
 
         <TouchableOpacity style={[s.btn, !valid && s.btnDisabled]} onPress={submit} disabled={!valid || loading} activeOpacity={0.85}>
-          <Text style={s.btnText}>{loading ? "Depositing..." : `Deposit $${valid ? parsed.toFixed(2) : "0.00"}`}</Text>
+          <Text style={s.btnText}>{loading ? "Depositing..." : `Deposit ${formatMoney(valid ? parsed : 0)}`}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
