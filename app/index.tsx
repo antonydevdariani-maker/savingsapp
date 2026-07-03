@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 const steps = [
   { icon: "💵", title: "Deposit", desc: "Add money — locks instantly" },
-  { icon: "📷", title: "Challenge", desc: "Do pushups on camera, AI counts every rep" },
+  { icon: "📷", title: "Challenge", desc: "Do pushups on camera to earn your money back" },
   { icon: "✅", title: "Withdraw", desc: "$10 = 5 reps, $100 = 50 reps, max 75" },
 ];
 
@@ -41,7 +41,7 @@ export default function Landing() {
           <Text style={s.green}>Earn</Text> it back.
         </Text>
         <Text style={s.sub}>
-          Deposit funds. They&apos;re locked. To withdraw, you do pushups — AI counts every rep in real time.
+          Deposit funds. They&apos;re locked. To withdraw, you do pushups on camera — every rep counts.
         </Text>
       </View>
 

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from "react-native";
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "expo-router";
+import { useState, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 
 interface Account { balance: number; locked_balance: number; locked_until?: string | null }
@@ -33,7 +33,7 @@ export default function Dashboard() {
     setGoals(goalData ?? []);
   }, [router]);
 
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -58,13 +58,34 @@ export default function Dashboard() {
           <Text style={s.signOut}>Sign out</Text>
         </TouchableOpacity>
       </View>
-      <Text style={s.emailText}>{email.split("@")[0]}</Text>
+      <Text style={s.greeting}>
+        {new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening"}, {email.split("@")[0]}
+      </Text>
 
       {/* balance card */}
       <View style={s.card}>
-        <Text style={s.label}>Locked Balance</Text>
-        <Text style={s.balance}>${(account?.locked_balance ?? 0).toFixed(2)}</Text>
-        <Text style={s.total}>Total: ${(account?.balance ?? 0).toFixed(2)}</Text>
+        <Text style={s.label}>Total Saved</Text>
+        <Text style={s.balance}>
+          ${Math.floor(account?.locked_balance ?? 0)}
+          <Text style={s.cents}>.{((account?.locked_balance ?? 0) % 1).toFixed(2).slice(2)}</Text>
+        </Text>
+
+        <View style={s.statsRow}>
+          <View style={s.stat}>
+            <Text style={s.statValue}>{transactions.filter((t) => t.type === "deposit").length}</Text>
+            <Text style={s.statLabel}>Deposits</Text>
+          </View>
+          <View style={s.statDivider} />
+          <View style={s.stat}>
+            <Text style={s.statValue}>{goals.length}</Text>
+            <Text style={s.statLabel}>Goals</Text>
+          </View>
+          <View style={s.statDivider} />
+          <View style={s.stat}>
+            <Text style={s.statValue}>{transactions.filter((t) => t.type === "withdrawal").length}</Text>
+            <Text style={s.statLabel}>Unlocks</Text>
+          </View>
+        </View>
 
         {account?.locked_until && new Date(account.locked_until) > new Date() && (
           <View style={s.lockBadge}>
@@ -145,11 +166,16 @@ const s = StyleSheet.create({
   logo: { fontSize: 20, fontWeight: "700", color: "#fff" },
   green: { color: "#00ff88" },
   signOut: { color: "rgba(255,255,255,0.3)", fontSize: 13 },
-  emailText: { color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 24 },
-  card: { backgroundColor: "#111", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "#222", marginBottom: 32 },
-  label: { color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
-  balance: { fontSize: 48, fontWeight: "800", color: "#fff" },
-  total: { color: "rgba(255,255,255,0.3)", fontSize: 13, marginTop: 2, marginBottom: 20 },
+  greeting: { color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 24, textTransform: "capitalize" },
+  card: { backgroundColor: "#111", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "rgba(0,255,136,0.15)", marginBottom: 32 },
+  label: { color: "#00ff88", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
+  balance: { fontSize: 52, fontWeight: "800", color: "#fff", marginBottom: 16 },
+  cents: { fontSize: 28, color: "rgba(255,255,255,0.4)" },
+  statsRow: { flexDirection: "row", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 14, paddingVertical: 12, marginBottom: 16 },
+  stat: { flex: 1, alignItems: "center" },
+  statDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.08)" },
+  statValue: { color: "#fff", fontWeight: "800", fontSize: 18 },
+  statLabel: { color: "rgba(255,255,255,0.3)", fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2 },
   lockBadge: { backgroundColor: "rgba(248,113,113,0.1)", borderRadius: 8, padding: 8, marginBottom: 12, borderWidth: 1, borderColor: "rgba(248,113,113,0.3)" },
   lockBadgeText: { color: "#f87171", fontSize: 12, textAlign: "center" },
   actions: { flexDirection: "row", gap: 8 },

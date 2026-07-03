@@ -44,12 +44,18 @@ export default function Challenge() {
 
       const { data: acct } = await supabase
         .from("sweatlock_accounts")
-        .select("balance,locked_balance")
+        .select("balance,locked_balance,locked_until")
         .eq("user_id", user.id)
         .single();
 
       if (!acct || acct.locked_balance < amount) {
         Alert.alert("Error", "Insufficient balance");
+        router.back();
+        return;
+      }
+
+      if (acct.locked_until && new Date(acct.locked_until) > new Date()) {
+        Alert.alert("Locked", "Your funds are in a lock period");
         router.back();
         return;
       }
@@ -75,7 +81,7 @@ export default function Challenge() {
         updated_at: new Date().toISOString(),
       }).eq("user_id", user.id);
 
-      router.replace("/success");
+      router.replace({ pathname: "/success", params: { amount: String(amount), reps: String(completedReps) } });
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Withdrawal failed");
       setSubmitting(false);
