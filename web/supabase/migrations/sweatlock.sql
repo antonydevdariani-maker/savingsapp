@@ -43,6 +43,18 @@ create policy "users own transactions" on sweatlock_transactions
 create policy "users own challenge logs" on sweatlock_challenge_logs
   for all using (auth.uid() = user_id);
 
+-- atomic balance increment for deposits
+create or replace function sweatlock_add_balance(p_user_id uuid, p_amount numeric)
+returns void language plpgsql security definer as $$
+begin
+  update sweatlock_accounts
+  set balance = balance + p_amount,
+      locked_balance = locked_balance + p_amount,
+      updated_at = now()
+  where user_id = p_user_id;
+end;
+$$;
+
 -- auto-create account on signup
 create or replace function create_sweatlock_account()
 returns trigger language plpgsql security definer as $$
