@@ -20,10 +20,10 @@ export default function Success() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E", alignItems: "center", justifyContent: "center", gap: 12, padding: 24 },
-  title: { color: "#10B981", fontSize: 28, fontWeight: "800" },
-  amount: { color: "#10B981", fontSize: 22, fontWeight: "700" },
+  root: { flex: 1, backgroundColor: "#000000", alignItems: "center", justifyContent: "center", gap: 12, padding: 24 },
+  title: { color: "#3B82F6", fontSize: 28, fontWeight: "800" },
+  amount: { color: "#3B82F6", fontSize: 22, fontWeight: "700" },
   sub: { color: "rgba(255,255,255,0.4)", fontSize: 15, marginBottom: 16 },
-  btn: { backgroundColor: "#10B981", borderRadius: 16, paddingVertical: 18, paddingHorizontal: 40 },
+  btn: { backgroundColor: "#3B82F6", borderRadius: 16, paddingVertical: 18, paddingHorizontal: 40 },
   btnText: { color: "#FFFFFF", fontWeight: "700", fontSize: 16 },
 });

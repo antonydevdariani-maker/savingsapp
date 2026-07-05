@@ -49,7 +49,7 @@ export default function Dashboard() {
     <ScrollView
       style={s.root}
       contentContainerStyle={[s.content, { paddingTop: insets.top + 16 }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10B981" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
     >
       <View style={s.header}>
         <Text style={s.logo}><Text style={s.green}>Sweat</Text>Lock</Text>
@@ -143,7 +143,7 @@ export default function Dashboard() {
               <Text style={s.txDate}>{new Date(tx.created_at).toLocaleDateString()}</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={[s.txAmount, { color: tx.type === "deposit" ? "#10B981" : "#f87171" }]}>
+              <Text style={[s.txAmount, { color: tx.type === "deposit" ? "#3B82F6" : "#f87171" }]}>
                 {tx.type === "deposit" ? "+" : "-"}{formatMoney(tx.amount)}
               </Text>
               <Text style={s.txStatus}>{tx.status}</Text>
@@ -156,16 +156,16 @@ export default function Dashboard() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E" },
+  root: { flex: 1, backgroundColor: "#000000" },
   content: { padding: 20, paddingBottom: 48 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
   logo: { fontSize: 20, fontWeight: "700", color: "#fff" },
-  green: { color: "#10B981" },
-  profileBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(16,185,129,0.15)", borderWidth: 1, borderColor: "rgba(16,185,129,0.4)", alignItems: "center", justifyContent: "center" },
-  profileBtnText: { color: "#10B981", fontWeight: "700", fontSize: 14 },
+  green: { color: "#3B82F6" },
+  profileBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(59,130,246,0.15)", borderWidth: 1, borderColor: "rgba(59,130,246,0.4)", alignItems: "center", justifyContent: "center" },
+  profileBtnText: { color: "#3B82F6", fontWeight: "700", fontSize: 14 },
   greeting: { color: "rgba(255,255,255,0.4)", fontSize: 14, marginBottom: 24, textTransform: "capitalize" },
-  card: { backgroundColor: "#121A2B", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "rgba(16,185,129,0.15)", marginBottom: 32 },
-  label: { color: "#10B981", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
+  card: { backgroundColor: "#0A1220", borderRadius: 24, padding: 24, borderWidth: 1, borderColor: "rgba(59,130,246,0.15)", marginBottom: 32, shadowColor: "#3B82F6", shadowOpacity: 0.15, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  label: { color: "#3B82F6", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
   balance: { fontSize: 44, fontWeight: "800", color: "#fff", marginBottom: 16 },
   statsRow: { flexDirection: "row", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 14, paddingVertical: 12, marginBottom: 16 },
   stat: { flex: 1, alignItems: "center" },
@@ -175,26 +175,26 @@ const s = StyleSheet.create({
   lockBadge: { backgroundColor: "rgba(248,113,113,0.1)", borderRadius: 8, padding: 8, marginBottom: 12, borderWidth: 1, borderColor: "rgba(248,113,113,0.3)" },
   lockBadgeText: { color: "#f87171", fontSize: 12, textAlign: "center" },
   actions: { flexDirection: "row", gap: 8 },
-  depositBtn: { flex: 1, backgroundColor: "#1A2438", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  depositBtn: { flex: 1, backgroundColor: "#101A2C", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   depositBtnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
-  lockBtn: { flex: 1, backgroundColor: "#1A2438", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  lockBtn: { flex: 1, backgroundColor: "#101A2C", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   lockBtnText: { color: "#f87171", fontWeight: "600", fontSize: 13 },
-  withdrawBtn: { flex: 1, backgroundColor: "#10B981", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  withdrawBtn: { flex: 1, backgroundColor: "#3B82F6", borderRadius: 12, paddingVertical: 14, alignItems: "center", shadowColor: "#3B82F6", shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
   withdrawBtnText: { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
   sectionLabel: { color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  addGoal: { color: "#10B981", fontSize: 13, fontWeight: "600" },
-  emptyGoal: { backgroundColor: "#121A2B", borderRadius: 14, padding: 20, borderWidth: 1, borderColor: "#1E2A40", alignItems: "center", marginBottom: 8 },
+  addGoal: { color: "#3B82F6", fontSize: 13, fontWeight: "600" },
+  emptyGoal: { backgroundColor: "#0A1220", borderRadius: 14, padding: 20, borderWidth: 1, borderColor: "#16233A", alignItems: "center", marginBottom: 8 },
   emptyGoalText: { color: "rgba(255,255,255,0.3)", fontSize: 14 },
-  goalCard: { backgroundColor: "#121A2B", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#1E2A40" },
+  goalCard: { backgroundColor: "#0A1220", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#16233A" },
   goalRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   goalName: { color: "#fff", fontWeight: "700", fontSize: 15 },
   goalAmt: { color: "rgba(255,255,255,0.4)", fontSize: 13 },
-  goalTrack: { height: 6, backgroundColor: "#1A2438", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
-  goalFill: { height: 6, backgroundColor: "#10B981", borderRadius: 3 },
+  goalTrack: { height: 6, backgroundColor: "#101A2C", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  goalFill: { height: 6, backgroundColor: "#3B82F6", borderRadius: 3 },
   goalPct: { color: "rgba(255,255,255,0.3)", fontSize: 11 },
   empty: { color: "rgba(255,255,255,0.2)", textAlign: "center", paddingVertical: 40, fontSize: 14 },
-  tx: { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#121A2B", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#1A2438" },
+  tx: { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#0A1220", borderRadius: 14, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: "#101A2C" },
   txType: { color: "#fff", fontWeight: "600", fontSize: 14, textTransform: "capitalize" },
   txDate: { color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 2 },
   txAmount: { fontWeight: "700", fontSize: 14 },

@@ -98,25 +98,25 @@ export default function Login() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E" },
+  root: { flex: 1, backgroundColor: "#000000" },
   content: { flex: 1, padding: 24, justifyContent: "center", gap: 12 },
   logo: { fontSize: 28, fontWeight: "700", color: "#fff", marginBottom: 16, textAlign: "center" },
-  green: { color: "#10B981" },
-  tabs: { flexDirection: "row", backgroundColor: "#121A2B", borderRadius: 12, padding: 4, marginBottom: 8 },
+  green: { color: "#3B82F6" },
+  tabs: { flexDirection: "row", backgroundColor: "#0A1220", borderRadius: 12, padding: 4, marginBottom: 8 },
   tab: { flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 10 },
-  tabActive: { backgroundColor: "#1A2438" },
+  tabActive: { backgroundColor: "#101A2C" },
   tabText: { color: "rgba(255,255,255,0.4)", fontWeight: "600", fontSize: 14 },
   tabTextActive: { color: "#fff" },
   input: {
-    backgroundColor: "#121A2B", borderWidth: 1, borderColor: "#1E2A40",
+    backgroundColor: "#0A1220", borderWidth: 1, borderColor: "#16233A",
     borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
     color: "#fff", fontSize: 16,
   },
-  btn: { backgroundColor: "#10B981", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 4 },
+  btn: { backgroundColor: "#3B82F6", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 4 },
   btnText: { color: "#FFFFFF", fontWeight: "700", fontSize: 16 },
   divider: { flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 4 },
-  line: { flex: 1, height: 1, backgroundColor: "#1E2A40" },
+  line: { flex: 1, height: 1, backgroundColor: "#16233A" },
   dividerText: { color: "rgba(255,255,255,0.2)", fontSize: 13 },
-  testBtn: { backgroundColor: "#1A2438", borderWidth: 1, borderColor: "#2A3654", borderRadius: 14, paddingVertical: 16, alignItems: "center" },
+  testBtn: { backgroundColor: "#101A2C", borderWidth: 1, borderColor: "#1E2F4D", borderRadius: 14, paddingVertical: 16, alignItems: "center" },
   testBtnText: { color: "rgba(255,255,255,0.6)", fontWeight: "600", fontSize: 15 },
 });

@@ -67,7 +67,7 @@ export default function Terms() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E" },
+  root: { flex: 1, backgroundColor: "#000000" },
   content: { padding: 20 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
   back: { color: "rgba(255,255,255,0.4)", fontSize: 14 },

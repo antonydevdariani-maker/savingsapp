@@ -77,7 +77,7 @@ export default function NewGoal() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E" },
+  root: { flex: 1, backgroundColor: "#000000" },
   content: { flex: 1, padding: 24, paddingTop: 64 },
   backBtn: { marginBottom: 32 },
   backText: { color: "rgba(255,255,255,0.4)", fontSize: 14 },
@@ -85,10 +85,10 @@ const s = StyleSheet.create({
   sub: { color: "rgba(255,255,255,0.4)", fontSize: 15, marginBottom: 36 },
   field: { marginBottom: 24 },
   fieldLabel: { color: "rgba(255,255,255,0.3)", fontSize: 11, letterSpacing: 1.5, marginBottom: 8 },
-  input: { backgroundColor: "#121A2B", borderRadius: 14, padding: 16, color: "#fff", fontSize: 16, borderWidth: 1, borderColor: "#1E2A40" },
+  input: { backgroundColor: "#0A1220", borderRadius: 14, padding: 16, color: "#fff", fontSize: 16, borderWidth: 1, borderColor: "#16233A" },
   amtRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   dollar: { color: "rgba(255,255,255,0.4)", fontSize: 20 },
-  btn: { backgroundColor: "#10B981", borderRadius: 16, paddingVertical: 18, alignItems: "center", marginTop: 8 },
+  btn: { backgroundColor: "#3B82F6", borderRadius: 16, paddingVertical: 18, alignItems: "center", marginTop: 8 },
   btnDim: { opacity: 0.5 },
   btnText: { color: "#FFFFFF", fontWeight: "800", fontSize: 16 },
 });

@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { formatMoney } from "@/lib/currency";
 
 export default function Profile() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function Profile() {
   const [email, setEmail] = useState("");
   const [memberSince, setMemberSince] = useState("");
   const [friendCount, setFriendCount] = useState(0);
+  const [lockedBalance, setLockedBalance] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
   useFocusEffect(useCallback(() => {
@@ -21,6 +23,9 @@ export default function Profile() {
 
       const { data } = await supabase.rpc("sweatlock_friends_list");
       setFriendCount((data ?? []).filter((f: { status: string }) => f.status === "accepted").length);
+
+      const { data: acct } = await supabase.from("sweatlock_accounts").select("locked_balance").eq("user_id", user.id).single();
+      setLockedBalance(acct?.locked_balance ?? 0);
     })();
   }, [router]));
 
@@ -30,6 +35,18 @@ export default function Profile() {
   }
 
   function confirmDelete() {
+    if (lockedBalance > 0) {
+      Alert.alert(
+        "Withdraw First",
+        `You have ${formatMoney(lockedBalance)} locked. Withdraw it before deleting your account, or it will be lost.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Go to Withdraw", onPress: () => router.push("/withdraw") },
+          { text: "Delete Anyway", style: "destructive", onPress: deleteAccount },
+        ]
+      );
+      return;
+    }
     Alert.alert(
       "Delete Account",
       "This permanently deletes your account, balances, goals, and history. This cannot be undone.",
@@ -109,20 +126,20 @@ export default function Profile() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0A0F1E" },
+  root: { flex: 1, backgroundColor: "#000000" },
   content: { padding: 20 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 24 },
   back: { color: "rgba(255,255,255,0.4)", fontSize: 14 },
   title: { color: "#fff", fontWeight: "700", fontSize: 17 },
   identity: { alignItems: "center", marginBottom: 32 },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "rgba(16,185,129,0.15)", borderWidth: 1, borderColor: "rgba(16,185,129,0.4)", alignItems: "center", justifyContent: "center", marginBottom: 12 },
-  avatarText: { color: "#10B981", fontSize: 30, fontWeight: "800" },
+  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "rgba(59,130,246,0.15)", borderWidth: 1, borderColor: "rgba(59,130,246,0.4)", alignItems: "center", justifyContent: "center", marginBottom: 12 },
+  avatarText: { color: "#3B82F6", fontSize: 30, fontWeight: "800" },
   email: { color: "#fff", fontSize: 16, fontWeight: "600" },
   since: { color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 4 },
   groupLabel: { color: "rgba(255,255,255,0.35)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 },
-  group: { backgroundColor: "#121A2B", borderRadius: 16, borderWidth: 1, borderColor: "#1E2A40", marginBottom: 24, overflow: "hidden" },
+  group: { backgroundColor: "#0A1220", borderRadius: 16, borderWidth: 1, borderColor: "#16233A", marginBottom: 24, overflow: "hidden" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 16, paddingHorizontal: 18 },
-  rowDivider: { height: 1, backgroundColor: "#1E2A40" },
+  rowDivider: { height: 1, backgroundColor: "#16233A" },
   rowText: { color: "#fff", fontSize: 15, fontWeight: "500" },
   rowValue: { color: "rgba(255,255,255,0.35)", fontSize: 15 },
   rowDanger: { color: "#f87171", fontSize: 15, fontWeight: "600" },

@@ -37,7 +37,8 @@
           "cameraPermission": "SweatLock uses your camera to count pushup reps."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
